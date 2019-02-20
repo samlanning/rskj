@@ -1594,6 +1594,6 @@ public class BridgeStorageProviderTest {
     }
 
     private static Repository createRepository() {
-        return new MutableRepository(new MutableTrieCache(new MutableTrieImpl(new Trie(new TrieStoreImpl(new HashMapDB()), true))));
+        return new MutableRepository(new MutableTrieCache(new MutableTrieImpl(new Trie(new TrieStoreImpl(new HashMapDB())))));
     }
 }
