@@ -407,13 +407,34 @@ public class Program {
 
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     public void createContract(DataWord value, DataWord memStart, DataWord memSize) {
+        RskAddress senderAddress = new RskAddress(getOwnerAddress());
+        byte[] programCode = memoryChunk(memStart.intValue(), memSize.intValue());
+        // [2] CREATE THE CONTRACT ADDRESS
+        byte[] nonce = getStorage().getNonce(senderAddress).toByteArray();
+        byte[] newAddressBytes = HashUtil.calcNewAddr(getOwnerAddress().getLast20Bytes(), nonce);
+        RskAddress newAddress = new RskAddress(newAddressBytes);
 
+        createContractImpl(value, senderAddress, programCode, nonce, newAddressBytes, newAddress);
+    }
+
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+    public void createContract2(DataWord value, DataWord memStart, DataWord memSize, DataWord salt) {
+        RskAddress senderAddress = new RskAddress(getOwnerAddress());
+        byte[] programCode = memoryChunk(memStart.intValue(), memSize.intValue());
+        // [2] CREATE THE CONTRACT ADDRESS
+        byte[] nonce = getStorage().getNonce(senderAddress).toByteArray();
+        byte[] newAddressBytes = HashUtil.calcNewAddr(getOwnerAddress().getLast20Bytes(), nonce);
+        RskAddress newAddress = new RskAddress(newAddressBytes);
+
+        createContractImpl(value, senderAddress, programCode, nonce, newAddressBytes, newAddress);
+    }
+
+    private void createContractImpl(DataWord value, RskAddress senderAddress, byte[] programCode, byte[] nonce, byte[] newAddressBytes, RskAddress newAddress) {
         if (getCallDeep() == MAX_DEPTH) {
             stackPushZero();
             return;
         }
 
-        RskAddress senderAddress = new RskAddress(getOwnerAddress());
         Coin endowment = new Coin(value.getData());
         if (isNotCovers(getStorage().getBalance(senderAddress), endowment)) {
             stackPushZero();
@@ -421,7 +442,6 @@ public class Program {
         }
 
         // [1] FETCH THE CODE FROM THE MEMORY
-        byte[] programCode = memoryChunk(memStart.intValue(), memSize.intValue());
 
         if (isLogEnabled) {
             logger.info("creating a new contract inside contract run: [{}]", senderAddress);
@@ -431,10 +451,6 @@ public class Program {
         long gasLimit = getRemainingGas();
         spendGas(gasLimit, "internal call");
 
-        // [2] CREATE THE CONTRACT ADDRESS
-        byte[] nonce = getStorage().getNonce(senderAddress).toByteArray();
-        byte[] newAddressBytes = HashUtil.calcNewAddr(getOwnerAddress().getLast20Bytes(), nonce);
-        RskAddress newAddress = new RskAddress(newAddressBytes);
 
         if (byTestingSuite()) {
             // This keeps track of the contracts created for a test
