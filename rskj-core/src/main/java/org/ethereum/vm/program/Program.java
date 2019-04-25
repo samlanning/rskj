@@ -421,9 +421,9 @@ public class Program {
     public void createContract2(DataWord value, DataWord memStart, DataWord memSize, DataWord salt) {
         RskAddress senderAddress = new RskAddress(getOwnerAddress());
         byte[] programCode = memoryChunk(memStart.intValue(), memSize.intValue());
-        // [2] CREATE THE CONTRACT ADDRESS
+
         byte[] nonce = getStorage().getNonce(senderAddress).toByteArray();
-        byte[] newAddressBytes = HashUtil.calcNewAddr(getOwnerAddress().getLast20Bytes(), nonce);
+        byte[] newAddressBytes = HashUtil.calcSaltAddr(senderAddress, programCode, salt.getData());
         RskAddress newAddress = new RskAddress(newAddressBytes);
 
         createContractImpl(value, senderAddress, programCode, nonce, newAddressBytes, newAddress);
