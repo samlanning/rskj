@@ -126,13 +126,13 @@ public class HashUtil {
      * @param salt - salt to make different result addresses
      * @return new address
      */
-    public static byte[] calcSaltAddr(byte[] senderAddr, byte[] initCode, byte[] salt) {
+    public static byte[] calcSaltAddr(RskAddress senderAddr, byte[] initCode, byte[] salt) {
         // 1 - 0xff length, 32 bytes - keccak-256
-        byte[] data = new byte[1 + senderAddr.length + salt.length + 32];
+        byte[] data = new byte[1 + senderAddr.length() + salt.length + 32];
         data[0] = (byte) 0xff;
         int currentOffset = 1;
-        System.arraycopy(senderAddr, 0, data, currentOffset, senderAddr.length);
-        currentOffset += senderAddr.length;
+        System.arraycopy(senderAddr.getBytes(), 0, data, currentOffset, senderAddr.length());
+        currentOffset += senderAddr.length();
         System.arraycopy(salt, 0, data, currentOffset, salt.length);
         currentOffset += salt.length;
         byte[] sha3InitCode = keccak256(initCode);
