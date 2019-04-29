@@ -135,7 +135,7 @@ public class HashUtil {
         currentOffset += senderAddr.length;
         System.arraycopy(salt, 0, data, currentOffset, salt.length);
         currentOffset += salt.length;
-        byte[] sha3InitCode = sha3(initCode);
+        byte[] sha3InitCode = keccak256(initCode);
         System.arraycopy(sha3InitCode, 0, data, currentOffset, sha3InitCode.length);
 
         return sha3omit12(data);
