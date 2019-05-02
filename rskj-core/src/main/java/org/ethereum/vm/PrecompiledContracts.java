@@ -49,7 +49,7 @@ import static org.ethereum.util.ByteUtil.*;
  */
 public class PrecompiledContracts {
 
-    public static final String ECRECOVER_ADDR = "0000000000000000000000000000000000000001";
+    public static final String ECRECOVER_ADDR_STR = "0000000000000000000000000000000000000001";
     public static final String SHA256_ADDR = "0000000000000000000000000000000000000002";
     public static final String RIPEMPD160_ADDR = "0000000000000000000000000000000000000003";
     public static final String IDENTITY_ADDR_STR = "0000000000000000000000000000000000000004";
@@ -58,6 +58,7 @@ public class PrecompiledContracts {
     public static final String BRIDGE_ADDR_STR = "0000000000000000000000000000000001000006";
     public static final String REMASC_ADDR_STR = "0000000000000000000000000000000001000008";
 
+    public static final RskAddress ECRECOVER_ADDR = new RskAddress(ECRECOVER_ADDR_STR);
     public static final RskAddress BRIDGE_ADDR = new RskAddress(BRIDGE_ADDR_STR);
     public static final RskAddress IDENTITY_ADDR = new RskAddress(IDENTITY_ADDR_STR);
     public static final RskAddress REMASC_ADDR = new RskAddress(REMASC_ADDR_STR);
@@ -67,7 +68,7 @@ public class PrecompiledContracts {
     public static final DataWord IDENTITY_ADDR_DW = DataWord.valueOf(IDENTITY_ADDR.getBytes());
     public static final DataWord REMASC_ADDR_DW  = DataWord.valueOf(REMASC_ADDR.getBytes());
     public static final DataWord SAMPLE_ADDR_DW = DataWord.valueOf(SAMPLE_ADDR.getBytes());
-    public static final DataWord ECRECOVER_ADDR_DW = DataWord.valueFromHex(ECRECOVER_ADDR);
+    public static final DataWord ECRECOVER_ADDR_DW = DataWord.valueOf(ECRECOVER_ADDR.getBytes());
     public static final DataWord RIPEMPD160_ADDR_DW = DataWord.valueFromHex(RIPEMPD160_ADDR);
     public static final DataWord BIG_INT_MODEXP_ADDR_DW = DataWord.valueFromHex(BIG_INT_MODEXP_ADDR);
     public static final DataWord SHA256_ADDR_DW = DataWord.valueFromHex(SHA256_ADDR);
