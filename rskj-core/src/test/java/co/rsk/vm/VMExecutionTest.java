@@ -334,6 +334,20 @@ public class VMExecutionTest {
     }
 
     @Test
+    public void testCREATE2() {
+        Program program = executeCode(
+                        "PUSH32 0x0000000000000000000000000000000000000000000000000000000000000000" +
+                        " PUSH32 0x000000000000000000000000000000000000000000000000000000000000000c" +
+                        " PUSH32 0x0000000000000000000000000000000000000000000000000000000000000014" +
+                        " PUSH32 0x0000000000000000000000000000000000000000000000000000000000000000" +
+                        " CREATE2", 5);
+        Stack stack = program.getStack();
+
+        Assert.assertEquals(1, stack.size());
+        Assert.assertEquals(DataWord.valueOf(1), stack.peek());
+    }
+
+    @Test
     public void callDataCopyBasicGasCost() {
         Program program = executeCode(
                 // push some values for CALLDATACOPY
