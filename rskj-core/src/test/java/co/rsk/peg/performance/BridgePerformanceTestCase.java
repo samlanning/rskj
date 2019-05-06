@@ -20,31 +20,30 @@ package co.rsk.peg.performance;
 
 import co.rsk.bitcoinj.core.*;
 import co.rsk.config.BridgeConstants;
-import co.rsk.config.RskSystemProperties;
-import co.rsk.config.TestSystemProperties;
+import co.rsk.config.BridgeRegTestConstants;
 import co.rsk.db.RepositoryImpl;
 import co.rsk.db.RepositoryTrackWithBenchmarking;
-import org.ethereum.db.TrieStorePoolOnMemory;
 import co.rsk.peg.Bridge;
 import co.rsk.peg.BridgeStorageConfiguration;
 import co.rsk.peg.BridgeStorageProvider;
 import co.rsk.test.builders.BlockChainBuilder;
 import co.rsk.trie.Trie;
 import co.rsk.vm.VMPerformanceTest;
-import org.ethereum.config.blockchain.regtest.RegTestGenesisConfig;
+import org.bouncycastle.util.encoders.Hex;
+import org.ethereum.config.UnitTestBlockchainNetConfig;
 import org.ethereum.core.Blockchain;
 import org.ethereum.core.Repository;
 import org.ethereum.core.Transaction;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.crypto.HashUtil;
 import org.ethereum.datasource.HashMapDB;
+import org.ethereum.db.TrieStorePoolOnMemory;
 import org.ethereum.vm.LogInfo;
 import org.ethereum.vm.PrecompiledContracts;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.bouncycastle.util.encoders.Hex;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -57,7 +56,6 @@ import java.util.Random;
 public abstract class BridgePerformanceTestCase {
     protected static NetworkParameters networkParameters;
     protected static BridgeConstants bridgeConstants;
-    private static TestSystemProperties config;
 
     private boolean oldCpuTimeEnabled;
     private ThreadMXBean thread;
@@ -103,9 +101,7 @@ public abstract class BridgePerformanceTestCase {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        config = new TestSystemProperties();
-        config.setBlockchainConfig(new RegTestGenesisConfig());
-        bridgeConstants = config.getBlockchainConfig().getCommonConstants().getBridgeConstants();
+        bridgeConstants = BridgeRegTestConstants.getInstance();
         networkParameters = bridgeConstants.getBtcParams();
     }
 
@@ -252,10 +248,10 @@ public abstract class BridgePerformanceTestCase {
 
         ExecutionTracker executionInfo = new ExecutionTracker(thread);
 
-        RepositoryImpl repository = createRepositoryImpl(config);
+        RepositoryImpl repository = createRepositoryImpl();
         Repository track = repository.startTracking();
-        BridgeStorageConfiguration bridgeStorageConfigurationAtThisHeight = BridgeStorageConfiguration.fromBlockchainConfig(config.getBlockchainConfig().getConfigForBlock(executionIndex));
-        BridgeStorageProvider storageProvider = new BridgeStorageProvider(track, PrecompiledContracts.BRIDGE_ADDR, bridgeConstants,bridgeStorageConfigurationAtThisHeight);
+        BridgeStorageConfiguration bridgeStorageConfigurationAtThisHeight = new BridgeStorageConfiguration(true, true);
+        BridgeStorageProvider storageProvider = new BridgeStorageProvider(track, PrecompiledContracts.BRIDGE_ADDR, bridgeConstants, bridgeStorageConfigurationAtThisHeight);
 
         storageInitializer.initialize(storageProvider, track, executionIndex);
 
@@ -272,7 +268,7 @@ public abstract class BridgePerformanceTestCase {
 
         RepositoryTrackWithBenchmarking benchmarkerTrack = new RepositoryTrackWithBenchmarking(repository);
 
-        Bridge bridge = new Bridge(config, PrecompiledContracts.BRIDGE_ADDR);
+        Bridge bridge = new Bridge(PrecompiledContracts.BRIDGE_ADDR, bridgeConstants, new UnitTestBlockchainNetConfig());
         Blockchain blockchain = BlockChainBuilder.ofSize(heightProvider.getHeight(executionIndex));
         bridge.init(
                 tx,
@@ -325,7 +321,7 @@ public abstract class BridgePerformanceTestCase {
         return stats;
     }
 
-    public static RepositoryImpl createRepositoryImpl(RskSystemProperties config) {
+    public static RepositoryImpl createRepositoryImpl() {
         return new RepositoryImpl(new Trie(null, true), new HashMapDB(), new TrieStorePoolOnMemory());
     }
 }
