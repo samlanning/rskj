@@ -20,9 +20,16 @@ package co.rsk.vm;
 
 import co.rsk.config.TestSystemProperties;
 import co.rsk.config.VmConfig;
+import co.rsk.core.Coin;
+import co.rsk.core.RskAddress;
+import co.rsk.test.builders.AccountBuilder;
+import co.rsk.test.builders.TransactionBuilder;
+import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Hex;
 import org.ethereum.config.BlockchainConfig;
+import org.ethereum.core.Account;
 import org.ethereum.core.BlockFactory;
+import org.ethereum.core.Transaction;
 import org.ethereum.vm.DataWord;
 import org.ethereum.vm.PrecompiledContracts;
 import org.ethereum.vm.VM;
@@ -35,6 +42,7 @@ import org.junit.Test;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.math.BigInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -333,18 +341,45 @@ public class VMExecutionTest {
         Assert.assertEquals(12, program.getResult().getGasUsed());
     }
 
-    @Test
-    public void testCREATE2() {
+    private void callCreate2(String address, String salt,String init_code,int size, int intOffset, int value, String expected){
+        RskAddress testaddress = new RskAddress(address);
+        invoke.setOwnerAddress(testaddress);
+        invoke.getRepository().addBalance(testaddress, Coin.valueOf(value+1));
+        String inSize = "0x" + DataWord.valueOf(size);
+        String inOffset = "0x" + DataWord.valueOf(intOffset);
+
+        String initCodePush = "";
+        for (byte b: Hex.decode(init_code) ) {
+            initCodePush += " PUSH1 " + b;
+        }
+
+        if (!initCodePush.isEmpty()) {
+            initCodePush += " PUSH1 0x00 MSTORE";
+        }
+
         Program program = executeCode(
-                        "PUSH32 0x0000000000000000000000000000000000000000000000000000000000000000" +
-                        " PUSH32 0x000000000000000000000000000000000000000000000000000000000000000c" +
-                        " PUSH32 0x0000000000000000000000000000000000000000000000000000000000000014" +
-                        " PUSH32 0x0000000000000000000000000000000000000000000000000000000000000000" +
-                        " CREATE2", 5);
+                        initCodePush +
+                        " PUSH32 "+ salt +
+                        " PUSH32 "+ inSize +
+                        " PUSH32 "+ inOffset + // inOffset
+                        " PUSH32 "+ "0x" + DataWord.valueOf(value) +
+                        " CREATE2", 8);
         Stack stack = program.getStack();
+        String result = Hex.toHexString(Arrays.copyOfRange(stack.peek().getData(), 12, stack.peek().getData().length));
 
         Assert.assertEquals(1, stack.size());
-        Assert.assertEquals(DataWord.valueOf(1), stack.peek());
+        Assert.assertEquals(expected.toUpperCase(),result.toUpperCase());
+    }
+
+    @Test
+    public void testCREATE2_0() {
+        callCreate2("0x0000000000000000000000000000000000000000",
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "",
+                0,
+                0,
+                10,
+                "E33C0C7F7df4809055C3ebA6c09CFe4BaF1BD9e0");
     }
 
     @Test
@@ -372,11 +407,21 @@ public class VMExecutionTest {
         assertEquals(expected, Hex.toHexString(program.getStack().peek().getData()).toUpperCase());
     }
 
+    private static Transaction createTransaction(int number) {
+        AccountBuilder acbuilder = new AccountBuilder();
+        acbuilder.name("sender" + number);
+        Account sender = acbuilder.build();
+        acbuilder.name("receiver" + number);
+        Account receiver = acbuilder.build();
+        TransactionBuilder txbuilder = new TransactionBuilder();
+        return txbuilder.sender(sender).receiver(receiver).value(BigInteger.valueOf(number * 1000 + 1000)).build();
+    }
+
+
     private Program executeCode(byte[] code, int nsteps) {
         VM vm = new VM(vmConfig, precompiledContracts);
 
-        Program program = new Program(vmConfig, precompiledContracts, blockFactory, mock(BlockchainConfig.class), code, invoke, null);
-
+        Program program = new Program(vmConfig, precompiledContracts, blockFactory, mock(BlockchainConfig.class), code, invoke, createTransaction(1));
         for (int k = 0; k < nsteps; k++)
             vm.step(program);
 

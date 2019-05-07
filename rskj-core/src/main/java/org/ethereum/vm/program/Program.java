@@ -412,9 +412,8 @@ public class Program {
         // [2] CREATE THE CONTRACT ADDRESS
         byte[] nonce = getStorage().getNonce(senderAddress).toByteArray();
         byte[] newAddressBytes = HashUtil.calcNewAddr(getOwnerAddress().getLast20Bytes(), nonce);
-        RskAddress newAddress = new RskAddress(newAddressBytes);
 
-        createContractImpl(value, senderAddress, programCode, nonce, newAddressBytes, newAddress);
+        createContractImpl(value, senderAddress, programCode, nonce, newAddressBytes);
     }
 
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
@@ -424,16 +423,16 @@ public class Program {
 
         byte[] nonce = getStorage().getNonce(senderAddress).toByteArray();
         byte[] newAddressBytes = HashUtil.calcSaltAddr(senderAddress, programCode, salt.getData());
-        RskAddress newAddress = new RskAddress(newAddressBytes);
 
-        createContractImpl(value, senderAddress, programCode, nonce, newAddressBytes, newAddress);
+        createContractImpl(value, senderAddress, programCode, nonce, newAddressBytes);
     }
 
-    private void createContractImpl(DataWord value, RskAddress senderAddress, byte[] programCode, byte[] nonce, byte[] newAddressBytes, RskAddress newAddress) {
+    private void createContractImpl(DataWord value, RskAddress senderAddress, byte[] programCode, byte[] nonce, byte[] newAddressBytes) {
         if (getCallDeep() == MAX_DEPTH) {
             stackPushZero();
             return;
         }
+        RskAddress newAddress = new RskAddress(newAddressBytes);
 
         Coin endowment = new Coin(value.getData());
         if (isNotCovers(getStorage().getBalance(senderAddress), endowment)) {

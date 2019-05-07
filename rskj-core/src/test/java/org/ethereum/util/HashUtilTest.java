@@ -168,7 +168,7 @@ public class HashUtilTest {
         byte[] salt = DatatypeConverter.parseHexBinary(saltString);
         byte[] init_code = DatatypeConverter.parseHexBinary(code);
 
-        String result2 = Hex.toHexString(HashUtil.calcSaltAddr(r,init_code,salt));
-        assertEquals(expected.toUpperCase(), result2.toUpperCase());
+        String result = Hex.toHexString(HashUtil.calcSaltAddr(r,init_code,salt));
+        assertEquals(expected.toUpperCase(), result.toUpperCase());
     }
 }
