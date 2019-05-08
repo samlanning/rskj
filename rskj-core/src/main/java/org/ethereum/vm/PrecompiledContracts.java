@@ -23,7 +23,7 @@ import co.rsk.config.RemascConfigFactory;
 import co.rsk.config.RskSystemProperties;
 import co.rsk.core.RskAddress;
 import co.rsk.peg.Bridge;
-import co.rsk.peg.SamplePrecompiledContract;
+//import co.rsk.peg.SamplePrecompiledContract;
 import co.rsk.remasc.RemascContract;
 import org.ethereum.config.BlockchainConfig;
 import org.ethereum.core.Block;
@@ -76,7 +76,7 @@ public class PrecompiledContracts {
     private static Sha256 sha256 = new Sha256();
     private static Ripempd160 ripempd160 = new Ripempd160();
     private static Identity identity = new Identity();
-    private static SamplePrecompiledContract sample = new SamplePrecompiledContract(SAMPLE_ADDR);
+//    private static SamplePrecompiledContract sample = new SamplePrecompiledContract(SAMPLE_ADDR);
     private static BigIntegerModexp bigIntegerModexp = new BigIntegerModexp();
 
     private final RskSystemProperties config;
@@ -103,10 +103,10 @@ public class PrecompiledContracts {
         if (address.equals(IDENTITY_ADDR_DW)) {
             return identity;
         }
-        // RSKIP-93 removes this contract completely
-        if (address.equals(SAMPLE_ADDR_DW) && !blockchainConfig.isRskip93()) {
-            return sample;
-        }
+//        // RSKIP-93 removes this contract completely
+//        if (address.equals(SAMPLE_ADDR_DW) && !blockchainConfig.isRskip93()) {
+//            return sample;
+//        }
         if (address.equals(BRIDGE_ADDR_DW)) {
             return new Bridge(config, BRIDGE_ADDR);
         }
